@@ -32,6 +32,7 @@ local ext = {
 }
 local iron = {
   memory = {},
+  history = {},
   behavior = {
     debug_level = require("iron.debug_level"),
     manager = require("iron.memory_management"),
@@ -121,6 +122,10 @@ iron.ll.create_preferred_repl = function(ft)
     return iron.ll.create_new_repl(ft, repl)
 end
 
+iron.ll.append_history = function(ft, data)
+  return iron.config.manager.set(iron.history, ft, function() return data end)
+end
+
 iron.ll.ensure_repl_exists = function(ft, newfn)
   newfn = newfn or iron.ll.create_preferred_repl
   local mem = iron.ll.get_from_memory(ft)
@@ -151,6 +156,7 @@ iron.ll.send_to_repl = function(ft, data)
     repl = mem,
     level = iron.behavior.debug_level.info
   }
+
 
   local window = nvim.nvim_call_function('bufwinnr', {mem.bufnr})
   if window ~= -1 then
@@ -257,10 +263,7 @@ iron.core.send_motion = function(mtype)
   iron.ll.ensure_repl_exists(ft)
   iron.ll.send_to_repl(ft, lines)
 
-  iron.last.b_line = b_line
-  iron.last.b_col = b_col
-  iron.last.e_col = e_col
-  iron.last.e_line = e_line
+  -- TODO Add means for redo to re-execute command instead of re-extract from the same coordinates.
 end
 
 iron.core.visual_send = function()
